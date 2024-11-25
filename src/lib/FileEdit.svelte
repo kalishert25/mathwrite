@@ -7,10 +7,12 @@
 
   let selectedLine = $state(-1);
   let keyNum = $state(0);
+  let isFileChanged = $state(false)
   let { fileSystemHandle } = $props();
   interface FileLine {
     id: number;
     value: string;
+    initialValue: string;
   }
   let fileLines: FileLine[] = $state([]);
 
@@ -22,25 +24,29 @@
     const res: FileLine[] = lines
       .map((line: string, index: number) => {
         const match = /^\$\$(.*?)\$\$$/.exec(line.trim());
-        return {id:index, value:match ? match[1] : null} as FileLine; // Capture the string within $$...$$
+        return {id:index, value:match ? match[1] : null, initialValue:match ? match[1] : null} as FileLine; // Capture the string within $$...$$
       })
       .filter(fl => fl.value != null); // Remove nulls (lines that didn't match)
     console.log(res);
+    
     return res;
   };
   function handleOutsideClick(ev: MouseEvent) {
     let target = ev?.target as HTMLElement;
     if (!target.closest("button") && !target.closest("a")) {
       selectedLine = -1;
+      if(isFileChanged) writeFile(fileSystemHandle, fileLines) // whenever the selection changes, save the file
     }
   }
   $effect(() => {
     readFile(fileSystemHandle).then((lines) => {
+      isFileChanged = false
       fileLines = lines
       if (fileLines.length == 0) {
         fileLines = [{
           id: 0,
           value: "",
+          initialValue: ""
         }]
       }
       keyNum = fileLines.length // prevent duplicate keys
@@ -48,6 +54,17 @@
     })
   })
 
+
+  async function writeFile(fileHandle: FileSystemFileHandle, fileLines: FileLine[]) {
+  // Create a FileSystemWritableFileStream to write to.
+    const writable = await fileHandle.createWritable();
+    const contents = fileLines.map(fl => `$$${fl.value}$$`).join('\n')
+    // Write the contents of the file to the stream.
+    await writable.write(contents);
+
+    // Close the file and write the contents to disk.
+    await writable.close();
+}
   onMount(() => {
     
     
@@ -57,6 +74,7 @@
     };
   });
   $effect(() => {
+    
     if (selectedLine < 0) return;
 
     const mf = document.querySelector(
@@ -72,6 +90,7 @@
     fileLines.push({
       id: keyNum,
       value: "",
+      initialValue: ""
     });
     keyNum++;
   }
@@ -82,6 +101,7 @@
     selectedLine = Math.min(selectedLine + 1, fileLines.length - 1);
   }
   function handleEnter() {
+    writeFile(fileSystemHandle, fileLines)
     if (selectedLine >= fileLines.length - 1) {
       newLine();
     }
@@ -113,8 +133,13 @@
 
     {#each fileLines as line, index (line.id)}
       <MathInput
-        onclick={() => (selectedLine = index)}
+        onclick={() => {
+          isFileChanged = true
+          selectedLine = index
+          writeFile(fileSystemHandle, fileLines) // whenever the selection changes, save the file
+        }}
         {index}
+        initialValue={fileLines[index].initialValue}
         bind:value={fileLines[index].value}
         deleteMe={() => {
           removeLine(index);

@@ -4,6 +4,7 @@
   const MQ = MathQuill.getInterface(2);
 
   let {
+    initialValue,
     value = $bindable(""),
     index,
     onclick,
@@ -14,19 +15,14 @@
     isFocused,
   } = $props();
   let container: HTMLElement | undefined = $state();
-  
+
     const config = {
       handlers: {
         edit: function () {
+
           value = mathfield!.latex();
-          // const shortcuts = {
-          //     "/(?<!\\)int$/": '\\int',
-          //     "/(?<!\\)sqrt$/": '\\sqrt'
-          // }
-          // for(const shortcut in shortcuts) {
-          //     if(mathfield.matches(shortcut)) [
-          //     ]
-          // }
+
+
         },
         downOutOf: downOutOf,
         upOutOf: upOutOf,
@@ -43,13 +39,13 @@
   let mathfield: MathField | null = $state(null)
 
   onMount(() => {
-    console.log("New input created index "+index )
     mathfield = MQ.MathField(container, config)
   })
 
   $effect(() => {
-    console.log("value is "+ value)
-    mathfield?.latex(value)
+
+    console.log("value is "+ initialValue)
+    mathfield?.latex(initialValue)
 
   })
 
