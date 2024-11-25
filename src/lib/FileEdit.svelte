@@ -3,16 +3,15 @@
   import { onMount } from "svelte";
   import MathInput from "./MathInput.svelte";
   import type { MathField } from "mathquill-node";
-  
 
   let selectedLine = $state(-1);
   let keyNum = $state(0);
-  let isFileChanged = $state(false)
+  let isFileChanged = $state(false);
   let { fileSystemHandle } = $props();
   interface FileLine {
     id: number;
     value: string;
-    initialValue: string;
+    initialValue: string; // hack to make the mathinputs work right. To prevent the latex being reasingned while typing which gets anoyying because it kicks you out of exponents
   }
   let fileLines: FileLine[] = $state([]);
 
@@ -24,57 +23,61 @@
     const res: FileLine[] = lines
       .map((line: string, index: number) => {
         const match = /^\$\$(.*?)\$\$$/.exec(line.trim());
-        return {id:index, value:match ? match[1] : null, initialValue:match ? match[1] : null} as FileLine; // Capture the string within $$...$$
+        return {
+          id: index,
+          value: match ? match[1] : null,
+          initialValue: match ? match[1] : null,
+        } as FileLine; // Capture the string within $$...$$
       })
-      .filter(fl => fl.value != null); // Remove nulls (lines that didn't match)
+      .filter((fl) => fl.value != null); // Remove nulls (lines that didn't match)
     console.log(res);
-    
+
     return res;
   };
   function handleOutsideClick(ev: MouseEvent) {
     let target = ev?.target as HTMLElement;
     if (!target.closest("button") && !target.closest("a")) {
       selectedLine = -1;
-      if(isFileChanged) writeFile(fileSystemHandle, fileLines) // whenever the selection changes, save the file
+      if (isFileChanged) writeFile(fileSystemHandle, fileLines); // whenever the selection changes, save the file
     }
   }
   $effect(() => {
     readFile(fileSystemHandle).then((lines) => {
-      isFileChanged = false
-      fileLines = lines
+      isFileChanged = false;
+      fileLines = lines;
       if (fileLines.length == 0) {
-        fileLines = [{
-          id: 0,
-          value: "",
-          initialValue: ""
-        }]
+        fileLines = [
+          {
+            id: 0,
+            value: "",
+            initialValue: "",
+          },
+        ];
       }
-      keyNum = fileLines.length // prevent duplicate keys
-      
-    })
-  })
+      keyNum = fileLines.length; // prevent duplicate keys
+    });
+  });
 
-
-  async function writeFile(fileHandle: FileSystemFileHandle, fileLines: FileLine[]) {
-  // Create a FileSystemWritableFileStream to write to.
+  async function writeFile(
+    fileHandle: FileSystemFileHandle,
+    fileLines: FileLine[],
+  ) {
+    // Create a FileSystemWritableFileStream to write to.
     const writable = await fileHandle.createWritable();
-    const contents = fileLines.map(fl => `$$${fl.value}$$`).join('\n')
+    const contents = fileLines.map((fl) => `$$${fl.value}$$`).join("\n");
     // Write the contents of the file to the stream.
     await writable.write(contents);
 
     // Close the file and write the contents to disk.
     await writable.close();
-}
+  }
   onMount(() => {
-    
-    
     document.body.addEventListener("mousedown", handleOutsideClick, true);
     return () => {
       document.body.removeEventListener("mousedown", handleOutsideClick, true);
     };
   });
   $effect(() => {
-    
     if (selectedLine < 0) return;
 
     const mf = document.querySelector(
@@ -90,7 +93,7 @@
     fileLines.push({
       id: keyNum,
       value: "",
-      initialValue: ""
+      initialValue: "",
     });
     keyNum++;
   }
@@ -101,7 +104,7 @@
     selectedLine = Math.min(selectedLine + 1, fileLines.length - 1);
   }
   function handleEnter() {
-    writeFile(fileSystemHandle, fileLines)
+    writeFile(fileSystemHandle, fileLines);
     if (selectedLine >= fileLines.length - 1) {
       newLine();
     }
@@ -134,9 +137,9 @@
     {#each fileLines as line, index (line.id)}
       <MathInput
         onclick={() => {
-          isFileChanged = true
-          selectedLine = index
-          writeFile(fileSystemHandle, fileLines) // whenever the selection changes, save the file
+          isFileChanged = true;
+          selectedLine = index;
+          writeFile(fileSystemHandle, fileLines); // whenever the selection changes, save the file
         }}
         {index}
         initialValue={fileLines[index].initialValue}
