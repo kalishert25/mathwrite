@@ -39,6 +39,7 @@
     if (!target.closest("button") && !target.closest("a")) {
       selectedLine = -1;
       if (isFileChanged) writeFile(fileSystemHandle, fileLines); // whenever the selection changes, save the file
+      isFileChanged = false;
     }
   }
   $effect(() => {
