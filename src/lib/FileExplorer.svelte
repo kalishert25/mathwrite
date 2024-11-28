@@ -9,7 +9,7 @@
     fileSystemHandle: FileSystemHandle;
   };
 
-  let { rootDirectory, selectedFile = $bindable() } = $props();
+  let { rootDirectory, selectedFile = $bindable(), selectedParentDir = $bindable(), treechanged } = $props();
   let menuUI: MenuItem[] = $state([]);
 
   async function constructMenuUI(rootDir: FileSystemDirectoryHandle) {
@@ -49,15 +49,35 @@
     if (item.kind == "directory") {
       item.isCollapsed ? expandDir(i) : collapseDir(i);
       menuUI[i].isCollapsed = !menuUI[i].isCollapsed;
-    } else {
-      console.log("opening file: " + item.name);
-      selectedFile = item.fileSystemHandle;
+      return
     }
+
+    console.log("opening file: " + item.name);
+    selectedFile = item.fileSystemHandle;
+    for(let j = i - 1; j >= 0; j--) {
+      if(menuUI[j].nestingLevel < item.nestingLevel) {
+        selectedParentDir = menuUI[j].fileSystemHandle
+        console.log("parent dir: " + menuUI[j].name);
+        break
+      }
+    }
+    
   }
+
+
 
   (async () => {
     menuUI = await constructMenuUI(rootDirectory);
   })();
+
+  $effect(() => { 
+    
+    if(!treechanged) return
+     constructMenuUI(rootDirectory).then(v => {
+      menuUI = v
+      treechanged = false
+     })
+  })
 
   function expandDir(i: number) {
     const originalNestingLevel = menuUI[i].nestingLevel;
