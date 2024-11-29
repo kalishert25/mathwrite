@@ -10,7 +10,8 @@
         "svelteBracketNewLine": false,
         "semi": true,
         "proseWrap": "never",
-        "experimentalTernaries": true
+        "experimentalTernaries": true,
+        "tabWidth": 2
       }
     }
   ]

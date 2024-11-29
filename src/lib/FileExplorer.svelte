@@ -1,7 +1,7 @@
 <script lang="ts">
   import ExplorerItem from "./ExplorerItem.svelte";
   type MenuItem = {
-    name: string;
+    displayName: string;
     kind: "file" | "directory";
     isHidden: boolean;
     isCollapsed: boolean; // isCollapsed=true only valid for kind="directory"
@@ -9,24 +9,38 @@
     fileSystemHandle: FileSystemHandle;
   };
 
-  let { rootDirectory, selectedFile = $bindable(), selectedParentDir = $bindable(), treechanged } = $props();
+  let { rootDirectory, selectedFile = $bindable() }: {
+    rootDirectory: FileSystemDirectoryHandle,
+    selectedFile: FileSystemFileHandle,
+  } = $props();
+  let selectedDirectory: FileSystemDirectoryHandle = $state(rootDirectory)
   let menuUI: MenuItem[] = $state([]);
 
   async function constructMenuUI(rootDir: FileSystemDirectoryHandle) {
     const menu: MenuItem[] = [];
-    const stack: [FileSystemHandle, number][] = [[rootDir, 0]];
+    const stack: [FileSystemHandle, number][] = [[rootDir, -1]];
 
     while (stack.length > 0) {
       const [elem, nestingLevel] = stack.pop()!;
+      if (
+        elem.kind == "file" &&
+        elem.name.substring(elem.name.length - 3) != ".md"
+      ) {
+        continue;
+      }
 
       menu.push({
-        name: elem.name,
+        displayName:
+          elem.kind == "file" ?
+            elem.name.substring(0, elem.name.length - 3)
+          : elem.name,
         kind: elem.kind,
         isHidden: nestingLevel > 0,
         isCollapsed: elem.kind == "directory",
         nestingLevel: nestingLevel,
         fileSystemHandle: elem,
       });
+
       if (elem.kind == "file") continue;
       const next: [FileSystemHandle, number][] = [];
       for await (const child of (elem as FileSystemDirectoryHandle).values()) {
@@ -42,42 +56,36 @@
       stack.push(...next);
     }
 
-    return menu;
+    return menu.slice(1);
   }
+
+  const createFile = () => {
+    
+  }
+
   function handleClick(i: number) {
     const item = menuUI[i];
     if (item.kind == "directory") {
       item.isCollapsed ? expandDir(i) : collapseDir(i);
       menuUI[i].isCollapsed = !menuUI[i].isCollapsed;
-      return
+      return;
     }
 
-    console.log("opening file: " + item.name);
-    selectedFile = item.fileSystemHandle;
-    for(let j = i - 1; j >= 0; j--) {
-      if(menuUI[j].nestingLevel < item.nestingLevel) {
-        selectedParentDir = menuUI[j].fileSystemHandle
-        console.log("parent dir: " + menuUI[j].name);
-        break
-      }
-    }
-    
+    console.log("opening file: " + item.displayName);
+    selectedFile = item.fileSystemHandle as FileSystemFileHandle;
+
+    // for(let j = i - 1; j >= 0; j--) {
+    //   if(menuUI[j].nestingLevel < item.nestingLevel) {
+    //     selectedParentDir = menuUI[j].fileSystemHandle
+    //     console.log("parent dir: " + menuUI[j].displayName);
+    //     break
+    //   }
+    // }
   }
-
-
 
   (async () => {
     menuUI = await constructMenuUI(rootDirectory);
   })();
-
-  $effect(() => { 
-    
-    if(!treechanged) return
-     constructMenuUI(rootDirectory).then(v => {
-      menuUI = v
-      treechanged = false
-     })
-  })
 
   function expandDir(i: number) {
     const originalNestingLevel = menuUI[i].nestingLevel;
@@ -111,14 +119,29 @@
 </script>
 
 <div
-  class="flex min-h-screen min-w-0 flex-col  border-r-[1px] border-stone-700 bg-stone-800 px-0 pt-10 flex-1">
+
+  class="flex h-full min-h-screen min-w-0 flex-1 flex-col border-r-[1px] border-stone-700 bg-stone-800 px-0 pt-3">
+    <div class="flex flex-row items-center justify-center gap-2 py-1">
+    <button class="hover:bg-stone-700 p-1 transition rounded-lg ease-in-out duration-100 text-stone-300" aria-label="New File">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+</svg>
+    </button>
+        <button class="hover:bg-stone-700 p-1 transition rounded-lg ease-in-out duration-100 text-stone-300" aria-label="New Folder">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M12 10.5v6m3-3H9m4.06-7.19-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
+</svg>
+
+    </button>
+  </div>
   {#each menuUI as item, i (item.fileSystemHandle)}
     <ExplorerItem
-      name={menuUI[i].name}
+      name={menuUI[i].displayName}
       kind={menuUI[i].kind}
       nestingLevel={menuUI[i].nestingLevel}
       isHidden={menuUI[i].isHidden}
       isCollapsed={menuUI[i].isCollapsed}
+      isSelected={menuUI[i].fileSystemHandle as FileSystemFileHandle == selectedFile}
       onclick={() => handleClick(i)} />
   {/each}
 </div>

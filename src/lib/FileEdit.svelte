@@ -9,7 +9,16 @@
   let keyNum = $state(0);
   let isFileChanged = $state(false);
 
-  let { fileSystemHandle, parentDirHandle, ontreechange }: {fileSystemHandle: FileSystemFileHandle, parentDirHandle: FileSystemDirectoryHandle, ontreechange: any} = $props();
+
+
+
+  let {
+    fileSystemHandle,
+    renameFile,
+  }: {
+    fileSystemHandle: FileSystemFileHandle;
+    renameFile: (newName: string) => void;
+  } = $props();
   let fileTitle: string = $state("");
   interface FileLine {
     id: number;
@@ -19,8 +28,8 @@
   let fileLines: FileLine[] = $state([]);
 
   function stripFileExtension(filename: string) {
-    const split = filename.split(".")
-    return split.slice(0, split.length - 1).join("")
+    const split = filename.split(".");
+    return split.slice(0, split.length - 1).join("");
   }
 
   const readFile = async (fileSystemHandle: FileSystemFileHandle) => {
@@ -50,29 +59,7 @@
         writeFile(fileSystemHandle, fileLines); // whenever the selection changes, save the file
       }
       isFileChanged = false;
-
-
-      if(fileTitle != stripFileExtension(fileSystemHandle.name)) {
-        renameFile(fileSystemHandle, parentDirHandle, fileTitle+".md")
-      }
     }
-  }
-
-  async function renameFile(fileSystemHandle: FileSystemFileHandle, parentDirHandle: FileSystemDirectoryHandle, newName: string) {
-    
-    try {
-      const newFileHandle = await parentDirHandle.getFileHandle(newName)
-    } catch (err) {
-
-    }
-      // this means a file with the same name doenst exist
-
-      const newFileHandle = await parentDirHandle.getFileHandle(newName, { create: true})
-      ontreechange()
-      console.log("renaming file")
-      writeFile(newFileHandle, fileLines)
-
-      
   }
 
   $effect(() => {
@@ -88,7 +75,7 @@
           },
         ];
       }
-      fileTitle = stripFileExtension(fileSystemHandle.name)
+      fileTitle = stripFileExtension(fileSystemHandle.name);
       keyNum = fileLines.length; // prevent duplicate keys
     });
   });
@@ -112,6 +99,7 @@
       document.body.removeEventListener("mousedown", handleOutsideClick, true);
     };
   });
+
   $effect(() => {
     if (selectedLine < 0) return;
 
@@ -168,8 +156,9 @@
 <div
   class="mx-auto flex h-full min-h-screen w-full justify-center px-10 pt-10 text-lg md:w-3/4">
   <div class="flex w-full flex-col gap-3">
-
-    <AutoResizeTextarea bind:value={fileTitle}/>
+    <AutoResizeTextarea
+      onblur={() => renameFile(fileTitle)}
+      bind:value={fileTitle} />
     <UndoRedo />
 
     {#each fileLines as line, index (line.id)}

@@ -19,10 +19,7 @@
     const config = {
       handlers: {
         edit: function () {
-
           value = mathfield!.latex();
-
-
         },
         downOutOf: downOutOf,
         upOutOf: upOutOf,
@@ -58,8 +55,8 @@
   };
 </script>
 
-<div
-  class="flex border-collapse flex-row justify-between rounded-md  !text-left {isFocused
+<div 
+  class="flex border-collapse flex-row justify-between rounded-md hover:border-stone-700 !text-left {isFocused
     ? 'border border-stone-700 bg-stone-800'
     : 'border border-stone-800'}"
   id="mathline-{index}"
@@ -67,6 +64,7 @@
   <span class="select-none px-2 pt-1">{index + 1}</span>
   <button
     bind:this={container}
+    
     tabindex="-1"
     class="mathfield-container flex w-full flex-col justify-center overflow-hidden border-none px-3 py-5 !text-[1.5rem]"
     onmousedown={handleClick}>{value}</button
