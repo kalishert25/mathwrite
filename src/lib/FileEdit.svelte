@@ -154,7 +154,7 @@
 <!-- <textarea class="text-[3rem] bg-inherit border-none outline-disabled font-bold text-wrap leading-[4rem] resize-y caret-white focus:ring-0 box-border p-0" bind:value={fileTitle} ></textarea> -->
 
 <div
-  class="mx-auto flex h-full min-h-screen w-full justify-center px-10 pt-10 text-lg md:w-3/4">
+  class="mx-auto flex h-full  w-full justify-center px-10 pt-10 text-lg md:w-3/4 overflow-hidden">
   <div class="flex w-full flex-col gap-3">
     <AutoResizeTextarea
       onblur={() => renameFile(fileTitle)}

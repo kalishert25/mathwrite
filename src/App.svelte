@@ -7,7 +7,7 @@
     import { PaneGroup, Pane, PaneResizer } from "paneforge";
     //https://developer.mozilla.org/en-US/docs/Web/API/FileSystemDirectoryHandle
 
-    let selectedFile: FileSystemFileHandle | null = $state(null);
+    let selectedFile: FileSystemFileHandle | undefined = $state();
     const renameFile = (newName: string) => {
 
     }
@@ -22,7 +22,7 @@
     };
 </script>
 
-<main>
+<main class="">
     {#if rootDirectory == undefined}
         <ChooseFolder onclick={onFolderChosen} />
     {:else}
@@ -33,9 +33,9 @@
                     bind:selectedFile />
             </Pane>
             <PaneResizer
-                class="bg-background group relative ml-[-0.25rem] flex w-3 items-center">
+                class="bg-background group relative flex w-3 items-center">
                 <div
-                    class="ml-1 h-full w-0.5 transition duration-75 ease-in group-hover:bg-blue-600 group-hover:delay-300">
+                    class=" h-screen w-0.5 transition duration-75 ease-in group-hover:bg-blue-600 group-hover:delay-300">
                 </div>
             </PaneResizer>
             <Pane defaultSize={75}>

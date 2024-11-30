@@ -16,7 +16,9 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
 /* global.css */
+
 
 /* width */
 ::-webkit-scrollbar {
@@ -37,8 +39,7 @@
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
   background: theme(colors.stone.600);
-}
-
+} 
 .mq-cursor {
   border-left: 1px solid white !important;
 }
