@@ -9,9 +9,6 @@
   let keyNum = $state(0);
   let isFileChanged = $state(false);
 
-
-
-
   let {
     fileSystemHandle,
     renameFile,
@@ -93,10 +90,20 @@
     // Close the file and write the contents to disk.
     await writable.close();
   }
+  function handleSave(e: KeyboardEvent) {
+              if (isFileChanged) {
+            writeFile(fileSystemHandle, fileLines); // whenever the selection changes, save the file
+            isFileChanged = false;
+          }
+  }
+
   onMount(() => {
     document.body.addEventListener("mousedown", handleOutsideClick, true);
+
     return () => {
       document.body.removeEventListener("mousedown", handleOutsideClick, true);
+
+      
     };
   });
 
@@ -153,34 +160,44 @@
 
 <!-- <textarea class="text-[3rem] bg-inherit border-none outline-disabled font-bold text-wrap leading-[4rem] resize-y caret-white focus:ring-0 box-border p-0" bind:value={fileTitle} ></textarea> -->
 
+<div class="">
 <div
-  class="mx-auto flex h-full  w-full justify-center px-10 pt-10 text-lg md:w-3/4 overflow-hidden">
-  <div class="flex w-full flex-col gap-3">
+  class=" flex h-screen w-full gap-2  flex-col items-center  pt-10 text-lg overflow-hidden">
+  <div class="flex w-full h-max-[80vh] flex-col gap-3 overflow-y-scroll px-10">
+    <div class="">
+
+    
     <AutoResizeTextarea
       onblur={() => renameFile(fileTitle)}
       bind:value={fileTitle} />
     <UndoRedo />
-
+      </div>
     {#each fileLines as line, index (line.id)}
       <MathInput
         onclick={() => {
-          isFileChanged = true;
           selectedLine = index;
+          if (!isFileChanged) return;
           writeFile(fileSystemHandle, fileLines); // whenever the selection changes, save the file
+          isFileChanged = false;
         }}
         {index}
         initialValue={fileLines[index].initialValue}
         bind:value={fileLines[index].value}
         deleteMe={() => {
+
+
           removeLine(index);
         }}
+        onedit={() => (isFileChanged = true)}
         upOutOf={prevLine}
         downOutOf={nextLine}
         enter={handleEnter}
         isFocused={index == selectedLine} />
     {/each}
 
-    <button onclick={newLine} class="mx-auto" aria-labelledby="Add Line"
+    
+  </div>
+  <button onclick={newLine} class="mx-auto" aria-labelledby="Add Line"
       ><svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
@@ -194,5 +211,6 @@
           d="m19.5 8.25-7.5 7.5-7.5-7.5" />
       </svg>
     </button>
-  </div>
+</div>
+
 </div>

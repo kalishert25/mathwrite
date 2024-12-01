@@ -8,6 +8,7 @@
     value = $bindable(""),
     index,
     onclick,
+    onedit,
     downOutOf,
     upOutOf,
     enter,
@@ -20,6 +21,7 @@
       handlers: {
         edit: function () {
           value = mathfield!.latex();
+          onedit()
         },
         downOutOf: downOutOf,
         upOutOf: upOutOf,

@@ -182,18 +182,20 @@
       menuUI[itemIndex].isRenamable = false;
       menuUI[itemIndex].fileSystemHandle = newDirHandle;
 
-      for (let j = itemIndex; j < menuUI.length - 1; j++) {
-        const a = menuUI[j];
-        const b = menuUI[j + 1];
-        if (b.nestingLevel != a.nestingLevel) {
-          break;
-        }
-        if (a.displayName.localeCompare(b.displayName) < 0) {
-          break;
-        }
-        menuUI[j] = b;
-        menuUI[j + 1] = a;
-      }
+      menuUI = await constructMenuUI(rootDirectory)
+      // for (let j = itemIndex; j < menuUI.length - 1; j++) {
+      //   const a = menuUI[j];
+      //   const b = menuUI[j + 1];
+      //   if (b.nestingLevel != a.nestingLevel) {
+      //     break;
+      //   }
+      //   if (a.displayName.localeCompare(b.displayName) < 0) {
+      //     break;
+      //   }
+      //   menuUI[j] = b;
+      //   menuUI[j + 1] = a;
+      // }
+      return
     }
 
     try {
@@ -249,27 +251,19 @@
 
 <div class="relative h-screen border-r-[1px] border-stone-700 bg-stone-800">
   <div
-    class="sticky top-0 flex h-10 flex-row items-center justify-center gap-2 border-stone-700 bg-stone-800 py-2">
+    class="sticky top-0 flex h-10 flex-row items-center justify-center gap-2 border-stone-700 bg-stone-800 py-5">
     <button
       onclick={() => createRenamableItem("file")}
-      class="rounded-lg p-1 text-stone-300 transition duration-100 ease-in-out hover:bg-stone-700"
+      class="rounded-lg p-1 text-stone-400 transition duration-100 ease-in-out hover:bg-stone-700"
       aria-label="New File">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="1.5"
-        stroke="currentColor"
-        class="size-6">
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M12 4.5v15m7.5-7.5h-15" />
-      </svg>
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+</svg>
+
     </button>
     <button
       onclick={() => createRenamableItem("directory")}
-      class="rounded-lg p-1 text-stone-300 transition duration-100 ease-in-out hover:bg-stone-700"
+      class="rounded-lg p-1 text-stone-400 transition duration-100 ease-in-out hover:bg-stone-700"
       aria-label="New Folder">
       <svg
         xmlns="http://www.w3.org/2000/svg"

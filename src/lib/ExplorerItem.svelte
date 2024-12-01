@@ -79,6 +79,7 @@
         }}
         bind:value={renamedValue}
         bind:this={inputElement}
+        placeholder="Name"
         class="h-full border-none bg-inherit p-0 focus:ring-0" />
     {:else}
       <div
